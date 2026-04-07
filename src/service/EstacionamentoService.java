@@ -1,9 +1,10 @@
 package service;
 
 import entities.EstadiaEntity;
+import entities.VeiculoEntity;
+import enums.StatusPermanencia;
 import enums.TipoVeiculo;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,50 +13,42 @@ import java.util.List;
 public class EstacionamentoService {
     private Integer vagasCarro = 3;
     private Integer vagasMoto = 2;
-    private Double precoCarro = 5.5;
-    private Double precoMoto = 3.5;
     private List<EstadiaEntity> estadias = new ArrayList<>();
 
 
-    public void registrarEntrada(TipoVeiculo tipoVeiculo, String placa, LocalDateTime entrada){
+    public void entrada(TipoVeiculo tipoVeiculo, String placa, LocalDateTime horaEntrada){
 
-        if(tipoVeiculo == TipoVeiculo.CARRO && vagasCarro > 0) {
-            EstadiaEntity entity = new EstadiaEntity(tipoVeiculo, placa, entrada);
-            estadias.add(entity);
-            vagasCarro--;
-            System.out.println("Entrada carro registrada!");
-            System.out.println("Tipo Veiculo: " + entity.getTipoVeiculo());
-            System.out.println("Placa: " + entity.getPlaca());
-            System.out.println("Data-Horario: " + entity.getEntradaVeiculo());
-        }
-        else if (tipoVeiculo == TipoVeiculo.MOTO && vagasMoto >0){
-            EstadiaEntity entity = new EstadiaEntity(tipoVeiculo,placa,entrada);
-            vagasMoto--;
-            estadias.add(entity);
-            System.out.println("Entrada moto registrada");
-            System.out.println("Tipo Veiculo: " + entity.getTipoVeiculo());
-            System.out.println("Placa: " + entity.getPlaca());
-            System.out.println("Data-Horario: " + entity.getEntradaVeiculo());
-        }
-        else {
-            System.out.println("Entrada não autorizada");
-        }
-    }
-
-    public Double pagamentoCarro(TipoVeiculo tipoVeiculo, LocalDateTime entrada, LocalDateTime saida){
-        long minutos = Duration.between(entrada, saida).toMinutes();
-       if(tipoVeiculo == TipoVeiculo.CARRO && minutos <= 60) {
-           return precoCarro;
-
-       } else  {
-           long minutoExcentes = minutos - 60;
-           long fracoes = (long) Math.ceil(minutoExcentes / 15.0);
-           return precoCarro + (fracoes * 2.5);
-
+       if(tipoVeiculo.equals(TipoVeiculo.CARRO) && vagasCarro > 0 ){
+           System.out.println("Vagas carros disponiveis " + vagasCarro);
+           VeiculoEntity veiculo = new VeiculoEntity(TipoVeiculo.CARRO, placa);
+           estadias.add(new EstadiaEntity(veiculo, horaEntrada, StatusPermanencia.ATIVA));
+           vagasCarro--;
        }
 
+       else if(tipoVeiculo.equals(TipoVeiculo.MOTO)&& vagasMoto > 0){
+           System.out.println("Vagas motos disponiveis " + vagasMoto);
+           VeiculoEntity veiculo = new VeiculoEntity(TipoVeiculo.MOTO, placa);
+           estadias.add(new EstadiaEntity(veiculo, horaEntrada, StatusPermanencia.ATIVA));
+           vagasMoto--;
+
+       }
     }
-    public  List<EstadiaEntity> listarVeiculos(){
-       return  estadias;
+
+
+    public StatusPermanencia statusPermanencia(String placa){
+        for (EstadiaEntity e : estadias){
+            if (placa == e.getVeiculo().getPlaca()){
+                return e.getStatusPermanencia();
+            }
+        }
+        return StatusPermanencia.ENCERRADA;
     }
+
+
+
 }
+
+
+
+
+
