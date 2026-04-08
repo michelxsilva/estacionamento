@@ -16,24 +16,37 @@ public class EstacionamentoService {
     private List<EstadiaEntity> estadias = new ArrayList<>();
 
 
-    public void entrada(TipoVeiculo tipoVeiculo, String placa, LocalDateTime horaEntrada){
+    public Integer entrada(TipoVeiculo tipoVeiculo, String placa, LocalDateTime horaEntrada){
 
+        statusPermanencia(placa);
        if(tipoVeiculo.equals(TipoVeiculo.CARRO) && vagasCarro > 0 ){
-           System.out.println("Vagas carros disponiveis " + vagasCarro);
            VeiculoEntity veiculo = new VeiculoEntity(TipoVeiculo.CARRO, placa);
            estadias.add(new EstadiaEntity(veiculo, horaEntrada, StatusPermanencia.ATIVA));
            vagasCarro--;
+           return vagasCarro;
        }
-
-       else if(tipoVeiculo.equals(TipoVeiculo.MOTO)&& vagasMoto > 0){
-           System.out.println("Vagas motos disponiveis " + vagasMoto);
+          else if(tipoVeiculo.equals(TipoVeiculo.MOTO)&& vagasMoto > 0){
            VeiculoEntity veiculo = new VeiculoEntity(TipoVeiculo.MOTO, placa);
            estadias.add(new EstadiaEntity(veiculo, horaEntrada, StatusPermanencia.ATIVA));
            vagasMoto--;
+           return vagasMoto;
 
        }
+        else {  return  vagasMoto + vagasCarro;}
     }
+    public EstadiaEntity saida(String placa, LocalDateTime horarioSaida){
+        EstadiaEntity entity = new EstadiaEntity();
+        StatusPermanencia statusPermanencia = statusPermanencia(placa);
+        if(statusPermanencia == StatusPermanencia.ATIVA){
+            for (EstadiaEntity e : estadias){
+                e.setSaidaVeiculo(horarioSaida);
+                e.setStatusPermanencia(StatusPermanencia.ENCERRADA);
+                 vagasMoto++;
+                return e;
+            }
 
+        } return entity;
+    }
 
     public StatusPermanencia statusPermanencia(String placa){
         for (EstadiaEntity e : estadias){
